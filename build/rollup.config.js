@@ -9,7 +9,6 @@ const BUNDLE  = process.env.BUNDLE === 'true'
 const ESM     = process.env.ESM === 'true'
 
 let fileDest  = `bootstrap${ESM ? '.esm' : ''}.js`
-const indexPath = ESM ? '../js/index.esm.js' : '../js/index.umd.js'
 const external = ['popper.js']
 const plugins = [
   babel({
@@ -36,7 +35,7 @@ if (BUNDLE) {
 }
 
 const rollupConfig = {
-  input: path.resolve(__dirname, indexPath),
+  input: path.resolve(__dirname, `../js/index.${ESM ? 'esm' : 'umd'}.js`),
   output: {
     banner,
     file: path.resolve(__dirname, `../dist/js/${fileDest}`),
