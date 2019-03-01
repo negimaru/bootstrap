@@ -1,19 +1,22 @@
 'use strict'
 
-const path    = require('path')
-const babel   = require('rollup-plugin-babel')
+const path = require('path')
+const babel = require('rollup-plugin-babel')
 const resolve = require('rollup-plugin-node-resolve')
-const banner  = require('./banner.js')
+const banner = require('./banner.js')
 
-const BUNDLE  = process.env.BUNDLE === 'true'
-const ESM     = process.env.ESM === 'true'
+const BUNDLE = process.env.BUNDLE === 'true'
+const ESM = process.env.ESM === 'true'
 
-let fileDest  = `bootstrap${ESM ? '.esm' : ''}.js`
-const external = ['popper.js']
+let fileDest = `bootstrap${ESM ? '.esm' : ''}`
+fileDest += `${BUNDLE ? '.bundle' : ''}`
+
 const plugins = [
   babel({
-    exclude: 'node_modules/**', // Only transpile our source code
-    externalHelpersWhitelist: [ // Include only required helpers
+    // Only transpile our source code
+    exclude: 'node_modules/**',
+    // Include only required helpers
+    externalHelpersWhitelist: [
       'defineProperties',
       'createClass',
       'inheritsLoose',
@@ -22,32 +25,18 @@ const plugins = [
     ]
   })
 ]
-const globals = {
-  'popper.js': 'Popper'
-}
 
-if (BUNDLE) {
-  fileDest = `bootstrap${ESM ? '.esm' : ''}.bundle.js`
-  // Remove last entry in external array to bundle Popper
-  external.pop()
-  delete globals['popper.js']
-  plugins.push(resolve())
-}
-
-const rollupConfig = {
+module.exports = {
   input: path.resolve(__dirname, `../js/index.${ESM ? 'esm' : 'umd'}.js`),
   output: {
     banner,
-    file: path.resolve(__dirname, `../dist/js/${fileDest}`),
+    file: path.resolve(__dirname, `../dist/js/${fileDest}.js`),
     format: ESM ? 'esm' : 'umd',
-    globals
+    globals: {
+      'popper.js': 'Popper'
+    }
   },
-  external,
-  plugins
+  external: BUNDLE ? 'popper.js' : '',
+  plugins,
+  name: ESM ? '' : 'bootstrap'
 }
-
-if (!ESM) {
-  rollupConfig.output.name = 'bootstrap'
-}
-
-module.exports = rollupConfig
